@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+  name     String
+
+  Workflow Workflow[]
+
+  createdAt DateTime @default(now())
+}
+
+model Workflow {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+
+  Node           Node[]
+  NodeConnection NodeConnection[]
+  Execution      Execution[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([id, userId])
+}
+
+model Node {
+  id   String @id @default(uuid())
+  name String
+  type String
+  data Json?
+
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model NodeConnection {
+  id         String @id @default(uuid())
+  fromNodeId String
+  toNodeId   String
+  workflowId String
+
+  workflow Workflow @relation(fields: [workflowId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Execution {
+  id         String @id @default(uuid())
+  workflowId String
+  status     String
+  result     Json?
+
+  workflow Workflow @relation(fields: [workflowId], references: [id])
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+}
+
+model Log {
+  id      String @id @default(uuid())
+  message String
+  level   String
+
+  createdAt DateTime @default(now())
+}
