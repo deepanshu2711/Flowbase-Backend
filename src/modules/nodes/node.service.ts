@@ -13,6 +13,7 @@ export const addNode = async (
   type: string,
   data: Record<string, any>,
   workflowId: string,
+  userId: string,
 ) => {
   const workflow = await prisma.workflow.findUnique({
     where: { id: workflowId },
@@ -22,7 +23,34 @@ export const addNode = async (
     throw new AppError("Workflow not found", 404);
   }
 
-  return await prisma.node.create({ data: { name, type, data, workflowId } });
+  let credentialId: string | undefined = data.credentialId;
+
+  if (data.credential) {
+    const {
+      type: credType,
+      apiKey,
+      name,
+      botToken,
+      channelId,
+    } = data.credential;
+    const credentials = await prisma.credentials.create({
+      data: {
+        userId,
+        data: { apiKey: apiKey, botToken, channelId },
+        name,
+        type,
+      },
+    });
+    credentialId = credentials.id;
+  }
+
+  const nodeData = { ...data };
+  delete nodeData.credential;
+
+  if (credentialId) nodeData.credentialId = credentialId;
+  return await prisma.node.create({
+    data: { name, type, data: nodeData, workflowId },
+  });
 };
 
 export const deleteNode = async (id: string) => {

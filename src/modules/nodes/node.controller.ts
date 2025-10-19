@@ -12,7 +12,14 @@ export const getNodes = asyncHandler(async (req: Request, res: Response) => {
 
 export const addNode = asyncHandler(async (req: Request, res: Response) => {
   const { name, type, data, workflowId } = req.body;
-  const node = await NodeService.addNode(name, type, data, workflowId);
+  const userId = req.user?.id;
+  const node = await NodeService.addNode(
+    name,
+    type,
+    data,
+    workflowId,
+    userId as string,
+  );
   return successResponse(res, node);
 });
 
