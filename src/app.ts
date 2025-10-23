@@ -7,10 +7,11 @@ import { nodeRouter } from "./modules/nodes/node.routes";
 import { connectionRouter } from "./modules/connections/connection.routes";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { executeRouter } from "./modules/executions/execution.routes";
+import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 
 app.use("/api/auth", authRouter);
@@ -19,4 +20,5 @@ app.use("/api/nodes", authMiddleware, nodeRouter);
 app.use("/api/connections", connectionRouter);
 app.use("/api/executions", executeRouter);
 
+app.use(errorMiddleware);
 export default app;
